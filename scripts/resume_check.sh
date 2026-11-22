@@ -3,6 +3,7 @@
 set -euo pipefail
 MODEL=${MODEL:-HuggingFaceTB/SmolLM2-135M}
 STEPS=${STEPS:-40}
+DEVICE=${DEVICE:-cpu}
 ROOT=${ROOT:-runs/resume-check}
 PY=${PY:-.venv/bin/python}
 DATA=runs/data/shakespeare.jsonl
@@ -26,7 +27,7 @@ PY
 fi
 
 rm -rf "$ROOT"
-COMMON=(--model "$MODEL" --data "$DATA" --steps "$STEPS" --batch 4 --max-len 256 --ckpt-every 10 --eval-every 20 --seed 7)
+COMMON=(--model "$MODEL" --data "$DATA" --steps "$STEPS" --batch 4 --max-len 256 --ckpt-every 10 --eval-every 20 --seed 7 --device "$DEVICE")
 
 echo "== A: straight through"
 $PY -m mlx_bittrain.train "$ROOT/a" "${COMMON[@]}"

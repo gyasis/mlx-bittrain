@@ -64,6 +64,8 @@ def parse(argv=None) -> argparse.Namespace:
     p.add_argument("--stop-after", type=int, default=0,
                    help="pause cleanly after this many steps in this process (simulates a window end)")
     p.add_argument("--resume", action="store_true", help="continue from the newest valid checkpoint")
+    p.add_argument("--device", choices=("gpu", "cpu"), default="gpu",
+                   help="cpu gives bit-identical runs (Metal kernels are not deterministic); slower")
     return p.parse_args(argv)
 
 
@@ -107,6 +109,7 @@ def evaluate(model, val: Batches) -> float:
 
 def main(argv=None) -> int:
     a = parse(argv)
+    mx.set_default_device(mx.cpu if a.device == "cpu" else mx.gpu)
     run = Run(a.rundir)
     cfg = config_of(a)
     chash = config_hash(cfg)
