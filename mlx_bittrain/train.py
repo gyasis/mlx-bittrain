@@ -65,7 +65,7 @@ def parse(argv=None) -> argparse.Namespace:
                    help="pause cleanly after this many steps in this process (simulates a window end)")
     p.add_argument("--resume", action="store_true", help="continue from the newest valid checkpoint")
     p.add_argument("--device", choices=("gpu", "cpu"), default="gpu",
-                   help="cpu gives bit-identical runs (Metal kernels are not deterministic); slower")
+                   help="run on the CPU instead of the Metal GPU (slower)")
     return p.parse_args(argv)
 
 
@@ -124,6 +124,7 @@ def main(argv=None) -> int:
     model, tokenizer = load(a.model)
     model.freeze()
     n_layers = len(model.layers) if a.lora_layers < 0 else a.lora_layers
+    mx.random.seed(a.seed)
     linear_to_lora_layers(model, n_layers, {"rank": a.lora_rank, "scale": a.lora_scale, "dropout": 0.0})
     trainable = sum(v.size for _, v in tree_flatten(model.trainable_parameters()))
     expected = lora_param_count(model)

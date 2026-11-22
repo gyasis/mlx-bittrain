@@ -2,11 +2,11 @@
 # resume_check.sh — train the same run three ways (straight, paused + resumed, killed + resumed) and compare losses.
 set -euo pipefail
 MODEL=${MODEL:-HuggingFaceTB/SmolLM2-135M}
-STEPS=${STEPS:-16}
-MAX_LEN=${MAX_LEN:-128}
+STEPS=${STEPS:-40}
+MAX_LEN=${MAX_LEN:-256}
 STOP_AT=$((STEPS * 3 / 8))
 KILL_AT=$((STEPS * 5 / 8))
-DEVICE=${DEVICE:-cpu}
+DEVICE=${DEVICE:-gpu}
 ROOT=${ROOT:-runs/resume-check}
 PY=${PY:-.venv/bin/python}
 DATA=runs/data/shakespeare.jsonl
