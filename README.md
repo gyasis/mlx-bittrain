@@ -2,7 +2,17 @@
 
 Train small language models at 4, 2 and 1.58 bits (ternary) on an Apple Silicon Mac, overnight, with pause and resume.
 
-**Status: pre-alpha.** The design is complete. The code is not written yet.
+**Status: pre-alpha.** LoRA training on mlx-lm models works, with exact pause and resume. Low-bit quantizers, the planner and the supervisor come next.
+
+## Try it
+
+```bash
+python3.12 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+.venv/bin/python -m mlx_bittrain.envcheck
+./scripts/resume_check.sh   # trains SmolLM2-135M three ways and checks that resumed runs match exactly
+```
+
+A run directory holds `status.json` (live progress), `metrics.jsonl` (loss per step), `events.jsonl` (started, paused, resumed, completed) and checkpoints. Send `SIGTERM` to pause a run cleanly; pass `--resume` to continue it.
 
 ## What it does
 
