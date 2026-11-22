@@ -1,0 +1,21 @@
+[project]
+name = "mlx-bittrain"
+version = "0.0.1"
+description = "Low-bit (4/2/1.58-bit) LLM training on Apple Silicon with MLX: overnight runs, pause and resume"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+    "mlx==0.32.4",
+    "mlx-lm==0.32.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["mlx_bittrain"]
