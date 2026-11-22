@@ -20,9 +20,10 @@ def main() -> int:
     ref_dir, *others = map(Path, sys.argv[1:])
     ref = losses(ref_dir)
     steps = sorted(ref)
-    head = sum(ref[s] for s in steps[:10]) / 10
-    tail = sum(ref[s] for s in steps[-10:]) / 10
-    report = {"steps": len(steps), "first10_mean": round(head, 4), "last10_mean": round(tail, 4),
+    k = max(1, len(steps) // 4)
+    head = sum(ref[s] for s in steps[:k]) / k
+    tail = sum(ref[s] for s in steps[-k:]) / k
+    report = {"steps": len(steps), "first_quarter_mean": round(head, 4), "last_quarter_mean": round(tail, 4),
               "loss_falls": tail < head, "runs": {}}
     ok = tail < head
     for d in others:

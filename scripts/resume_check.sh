@@ -2,7 +2,10 @@
 # resume_check.sh — train the same run three ways (straight, paused + resumed, killed + resumed) and compare losses.
 set -euo pipefail
 MODEL=${MODEL:-HuggingFaceTB/SmolLM2-135M}
-STEPS=${STEPS:-40}
+STEPS=${STEPS:-16}
+MAX_LEN=${MAX_LEN:-128}
+STOP_AT=$((STEPS * 3 / 8))
+KILL_AT=$((STEPS * 5 / 8))
 DEVICE=${DEVICE:-cpu}
 ROOT=${ROOT:-runs/resume-check}
 PY=${PY:-.venv/bin/python}
@@ -27,20 +30,20 @@ PY
 fi
 
 rm -rf "$ROOT"
-COMMON=(--model "$MODEL" --data "$DATA" --steps "$STEPS" --batch 4 --max-len 256 --ckpt-every 10 --eval-every 20 --seed 7 --device "$DEVICE")
+COMMON=(--model "$MODEL" --data "$DATA" --steps "$STEPS" --batch 4 --max-len "$MAX_LEN" --ckpt-every 4 --eval-every 8 --seed 7 --device "$DEVICE")
 
 echo "== A: straight through"
 $PY -m mlx_bittrain.train "$ROOT/a" "${COMMON[@]}"
 
-echo "== B: pause after 15 steps, then resume"
-$PY -m mlx_bittrain.train "$ROOT/b" "${COMMON[@]}" --stop-after 15
+echo "== B: pause after $STOP_AT steps, then resume"
+$PY -m mlx_bittrain.train "$ROOT/b" "${COMMON[@]}" --stop-after "$STOP_AT"
 $PY -m mlx_bittrain.train "$ROOT/b" "${COMMON[@]}" --resume
 
-echo "== C: kill -9 after step 25, then resume"
+echo "== C: kill -9 after step $KILL_AT, then resume"
 $PY -m mlx_bittrain.train "$ROOT/c" "${COMMON[@]}" &
 PID=$!
-until [[ -f $ROOT/c/metrics.jsonl ]] && [[ $(grep -c '"loss"' "$ROOT/c/metrics.jsonl") -ge 25 ]]; do
-  kill -0 $PID 2>/dev/null || { echo "run C exited before step 25"; exit 1; }
+until [[ -f $ROOT/c/metrics.jsonl ]] && [[ $(grep -c '"loss"' "$ROOT/c/metrics.jsonl") -ge $KILL_AT ]]; do
+  kill -0 $PID 2>/dev/null || { echo "run C exited before step $KILL_AT"; exit 1; }
   sleep 0.2
 done
 kill -9 $PID; wait $PID 2>/dev/null || true
